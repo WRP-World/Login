@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "iterations": 250000,
+  "vault": {
+    "iv": "EX6PNIkpc+ZYNtC0",
+    "data": "eJV17JpNoIDOOr/By4pS4GoD1GTQrMZWP4ICOC4mkcL3MVo42N9YznwMGC78LNTGs5yepw/32CvRLbvoiQHLUb41DUUVqBgkfcAn5DZVZZ+BuXldNdqGkIGufze/uOA/qA2++ma0hob7Wstvvw=="
+  },
+  "users": {
+    "7397f80c37726bcf4f7b83dba33fae105eee91ac7e466a84bb115864dcb5e993": {
+      "salt": "f01UwT7fzyhr/ISUQAA0QA==",
+      "iv": "0mAQueUoVx1rPZUp",
+      "data": "jo7/7xKdUbHROQwAjMocjxOrc/sOkbNMlX8q9HQkyk+sYrK4HYRrO054HTzECZtB"
+    }
+  }
+}
