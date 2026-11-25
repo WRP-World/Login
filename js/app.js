@@ -183,9 +183,9 @@ function logout(msg) {
 
 /* GitHub (privates Repo) */
 
-async function gh(path) {
+async function gh(path, ref = CFG.branch) {
     const enc = path.split('/').map(encodeURIComponent).join('/');
-    const url = `${CFG.api}/repos/${CFG.owner}/${CFG.repo}/contents/${enc}?ref=${encodeURIComponent(CFG.branch)}`;
+    const url = `${CFG.api}/repos/${CFG.owner}/${CFG.repo}/contents/${enc}?ref=${encodeURIComponent(ref)}`;
     const res = await fetch(url, { headers: { Authorization: `Bearer ${state.token}`, Accept: 'application/vnd.github.raw+json' } });
     if (res.status === 401) throw new Error('auth');
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${path}`);
@@ -197,18 +197,19 @@ async function loadContent() {
     state.content = JSON.parse((await res.text()).replace(/^﻿/, ''));
 }
 
-function blobUrl(path) {
-    if (state.blobs.has(path)) return Promise.resolve(state.blobs.get(path));
-    if (state.pending.has(path)) return state.pending.get(path);
-    const job = gh(path)
+function blobUrl(path, ref = CFG.branch) {
+    const key = `${ref}:${path}`;
+    if (state.blobs.has(key)) return Promise.resolve(state.blobs.get(key));
+    if (state.pending.has(key)) return state.pending.get(key);
+    const job = gh(path, ref)
         .then(r => r.blob())
         .then(b => {
             const url = URL.createObjectURL(b);
-            state.blobs.set(path, url);
+            state.blobs.set(key, url);
             return url;
         })
-        .finally(() => state.pending.delete(path));
-    state.pending.set(path, job);
+        .finally(() => state.pending.delete(key));
+    state.pending.set(key, job);
     return job;
 }
 
@@ -229,13 +230,13 @@ function loadImage(img) {
         .catch(handleError);
 }
 
-async function download(path, btn) {
+async function download(path, btn, ref) {
     const label = btn.querySelector('span');
     const old = label.textContent;
     btn.disabled = true;
     label.textContent = 'Lädt …';
     try {
-        const url = await blobUrl(path);
+        const url = await blobUrl(path, ref);
         const a = h('a', { href: url, download: path.split('/').pop() });
         document.body.append(a);
         a.click();
@@ -345,7 +346,7 @@ const blocks =
             let action = null;
             if (d.file) {
                 action = h('button', { class: 'btn', type: 'button' }, svg('download'), h('span', {}, d.label || 'Download'));
-                action.addEventListener('click', () => download(d.file, action));
+                action.addEventListener('click', () => download(d.file, action, d.branch));
             }
             else if (d.page) {
                 action = h('a', { class: 'btn btn--cyan', href: `#/${d.page}${d.target ? '/' + d.target : ''}` }, svg('arrow'), h('span', {}, d.label || 'Öffnen'));
